@@ -21,6 +21,7 @@ principles.
 \details{
 takes \code{ggplot} object and changes it to a \code{grob}, mauls it a bit, and
     spits out a \code{grob}
+From: http://stackoverflow.com/questions/23497682/alter-facet-grid-output-in-ggplot2
 }
 \examples{
 library(reshape2)
@@ -28,18 +29,18 @@ library(reshape2)
 air <- transform(airquality, Ozone.model = Ozone +
     rnorm(length(Ozone), 2),
                         Wind.model = Wind + rnorm(length(Wind)))
-## Add time, see ?air
+## Add time, see ?airquality
 air$dtm <- as.Date(paste("1973", air$Month, air$Day,
                                 sep = "-"), format="\%Y-\%m-\%d", tz="EST")
 d.f <- melt(air, id.vars = "dtm", measure.vars = c("Wind",
     "Wind.model", "Ozone", "Ozone.model"))
 d.f$type <- ifelse(grepl("model", d.f$variable), "Modeled", "Measured")
 d.f$Variables <- sub("\\\\.model", "", d.f$variable)
-## The problem
 (box <- ggplot(d.f, aes(dtm, value, color=type)) +
     geom_line() +
      facet_grid(Variables~., scales="free_y"))
-## A solution, please note that \\code{ggsave} will no longer work
+## please note that \\code{ggsave} will no longer work with earlier  versions (<= 2.0.0) of ggplot2
+x11()
 move_facet_strip_y(box)
 
 }
