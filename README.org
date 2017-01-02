@@ -1,0 +1,38 @@
+* ggcrap
+  :PROPERTIES:
+  :CUSTOM_ID: ggcrap
+  :END:
+
+R add-ons for the great plotting package ggplot2
+
+#+begin_src R
+library(devtools)
+install_github("oneyb/ggcrap")
+library(ggcrap)
+library(reshape2)
+
+## simulate a model study
+air <- transform(airquality, Ozone.model = Ozone +
+              rnorm(length(Ozone), 2),
+Wind.model = Wind + rnorm(length(Wind)))
+## Add time, see ?airquality
+air$dtm <- as.Date(paste("1973", air$Month, air$Day,
+              sep = "-"), format="%Y-%m-%d", tz="EST")
+d.f <- melt(air, id.vars = "dtm", measure.vars = c("Wind", "Wind.model",
+              "Ozone", "Ozone.model"))
+d.f$type <- ifelse(grepl("model", d.f$variable), "Modeled", "Measured")
+d.f$Variables <- sub("\\.model", "", d.f$variable)
+plot <- ggplot(d.f, aes(dtm, value, color=type)) + geom_line()
+(box <- plot + facet_grid(Variables~., scales="free_y"))
+x11()
+(move_facet_strip_y(box))
+
+## Use fancy units
+d.f$Variables <- rerevalue(d.f$variable,
+              c("Wind~'('*m~s^{-1}*')'"="Wind.*", "Ozone~'('*mol~mol^{-1}*')'"="Ozone.*"))
+plot <- ggplot(d.f, aes(dtm, value, color=type)) + geom_line()
+(box <- plot + facet_grid(Variables~., scales="free_y",
+              labeller=label_parsed))
+x11()
+(move_facet_strip_y(box))
+#+end_src
